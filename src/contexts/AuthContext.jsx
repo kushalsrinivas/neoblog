@@ -35,6 +35,7 @@ export function AuthProvider({ children }) {
       }
     }),
     user,
+    loading
   }
 
   return (

@@ -1,8 +1,14 @@
 /* Add these styles to your existing CSS */
-.brutal-btn {
-  @apply px-4 py-2 font-bold border-2 border-accent transition-all duration-200 
-  hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_theme(colors.accent)]
-  active:translate-x-[0px] active:translate-y-[0px] active:shadow-none;
+.brutal-input {
+  @apply px-4 py-2 border-2 border-accent bg-primary w-full
+  focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+}
+
+.brutal-card {
+  @apply bg-primary border-2 border-accent p-6
+  hover:translate-x-[-4px] hover:translate-y-[-4px] 
+  hover:shadow-[8px_8px_0_0_theme(colors.accent)]
+  transition-all duration-200;
 }
 
 /* Rest of your existing styles... */
