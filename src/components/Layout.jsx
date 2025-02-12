@@ -3,13 +3,13 @@ import Header from './Header'
 
 function Layout() {
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen">
       <Header />
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <Outlet />
       </main>
-      <footer className="text-center py-12 text-accent font-bold border-t-2 border-accent">
-        © {new Date().getFullYear()} MINIMAL BLOG. ALL RIGHTS RESERVED.
+      <footer className="text-center py-8 text-gray-500">
+        © {new Date().getFullYear()} Minimal Blog. All rights reserved.
       </footer>
     </div>
   )
