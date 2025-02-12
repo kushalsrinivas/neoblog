@@ -1,8 +1,183 @@
-/* Add these styles to your existing CSS */
-.brutal-btn {
-  @apply px-4 py-2 font-bold border-2 border-accent transition-all duration-200 
-  hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0_0_theme(colors.accent)]
-  active:translate-x-[0px] active:translate-y-[0px] active:shadow-none;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #ffffff;
+  --color-secondary: #f3f3f3;
+  --color-accent: #000000;
+  --color-text: #000000;
 }
 
-/* Rest of your existing styles... */
+[data-theme="dark"] {
+  --color-primary: #000000;
+  --color-secondary: #1a1a1a;
+  --color-accent: #ffffff;
+  --color-text: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply bg-secondary text-text font-sans antialiased;
+  }
+}
+
+@layer components {
+  .brutal-btn {
+    @apply px-4 py-2 border-2 border-accent font-bold
+    hover:translate-x-[-4px] hover:translate-y-[-4px] 
+    hover:shadow-[4px_4px_0_0_theme(colors.accent)]
+    active:translate-x-[0px] active:translate-y-[0px]
+    active:shadow-none
+    transition-all duration-200
+    disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .brutal-input {
+    @apply px-4 py-2 border-2 border-accent bg-primary w-full
+    focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2
+    disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .brutal-card {
+    @apply bg-primary border-2 border-accent p-6
+    hover:translate-x-[-4px] hover:translate-y-[-4px] 
+    hover:shadow-[8px_8px_0_0_theme(colors.accent)]
+    transition-all duration-200;
+  }
+
+  .brutal-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .brutal-heading {
+    @apply text-4xl font-black mb-6;
+  }
+
+  .brutal-link {
+    @apply font-bold hover:underline decoration-accent decoration-2 underline-offset-4;
+  }
+
+  .brutal-tag {
+    @apply inline-block px-3 py-1 border-2 border-accent 
+    hover:translate-x-[-2px] hover:translate-y-[-2px] 
+    hover:shadow-[4px_4px_0_0_theme(colors.accent)]
+    transition-all duration-200;
+  }
+}
+
+/* Editor Styles */
+.ProseMirror {
+  @apply min-h-[200px] p-4 border-2 border-accent bg-primary;
+}
+
+.ProseMirror:focus {
+  @apply outline-none;
+}
+
+.ProseMirror > * + * {
+  @apply mt-4;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  @apply pl-4;
+}
+
+.ProseMirror ul {
+  @apply list-disc;
+}
+
+.ProseMirror ol {
+  @apply list-decimal;
+}
+
+.ProseMirror h1 {
+  @apply text-4xl font-bold;
+}
+
+.ProseMirror h2 {
+  @apply text-3xl font-bold;
+}
+
+.ProseMirror h3 {
+  @apply text-2xl font-bold;
+}
+
+.ProseMirror blockquote {
+  @apply pl-4 border-l-4 border-accent italic;
+}
+
+.ProseMirror code {
+  @apply bg-secondary px-2 py-1 rounded;
+}
+
+.ProseMirror pre {
+  @apply bg-secondary p-4 rounded;
+}
+
+.ProseMirror a {
+  @apply text-accent underline;
+}
+
+/* Animation Classes */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+
+/* Loading Animation */
+.loading-dots:after {
+  content: ".";
+  animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: ".";
+  }
+  40% {
+    content: "..";
+  }
+  60% {
+    content: "...";
+  }
+  80%,
+  100% {
+    content: "";
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent;
+}
+
+/* Toast Styling */
+.toast-brutal {
+  @apply bg-primary border-2 border-accent p-4 
+  shadow-[4px_4px_0_0_theme(colors.accent)]
+  font-bold;
+}

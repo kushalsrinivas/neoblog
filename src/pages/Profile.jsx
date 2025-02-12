@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
-function Profile() {
+export default function Profile() {
   const { user } = useAuth()
   const [blogs, setBlogs] = useState([])
   const [loading, setLoading] = useState(true)
