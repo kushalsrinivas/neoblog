@@ -7,7 +7,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        primary: 'var(--color-primary)',
+        secondary: 'var(--color-secondary)',
+        accent: 'var(--color-accent)',
+        text: 'var(--color-text)',
       },
     },
   },

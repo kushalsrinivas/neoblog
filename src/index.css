@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50;
+@layer base {
+  :root {
+    --color-primary: #f4f1ea;
+    --color-secondary: #e5e1d8;
+    --color-accent: #2d2d2d;
+    --color-text: #1a1a1a;
+    --shadow-brutal: 4px 4px 0 0 var(--color-accent);
+  }
+
+  body {
+    @apply bg-primary font-sans text-text;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .brutal-border {
+    @apply border-2 border-accent;
+  }
+
+  .brutal-shadow {
+    box-shadow: var(--shadow-brutal);
+  }
+
+  .brutal-btn {
+    @apply px-6 py-3 bg-secondary text-accent font-bold brutal-border brutal-shadow 
+    transition-transform active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
+  }
+
+  .brutal-card {
+    @apply bg-white brutal-border brutal-shadow hover:translate-x-[-4px] hover:translate-y-[-4px] 
+    transition-all duration-300;
+  }
+
+  .brutal-input {
+    @apply px-4 py-2 bg-white brutal-border focus:outline-none focus:ring-2 focus:ring-accent;
+  }
 }

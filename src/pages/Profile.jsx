@@ -1,83 +1,103 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 function Profile() {
   const { user } = useAuth()
-  const [blogs, setBlogs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState(null)
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('blogs')
-          .select('*')
-          .eq('author_id', user.id)
-          .order('created_at', { ascending: false })
+    getProfile()
+  }, [user])
 
-        if (error) throw error
-        setBlogs(data)
-      } catch (error) {
-        console.error(error)
-        toast.error('Error fetching blogs')
-      } finally {
-        setLoading(false)
-      }
+  async function getProfile() {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      toast.error('Error loading profile!')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchBlogs()
-  }, [user.id])
+  async function updateProfile(e) {
+    e.preventDefault()
+    try {
+      setUpdating(true)
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          ...profile,
+          updated_at: new Date().toISOString(),
+        })
+
+      if (error) throw error
+      toast.success('Profile updated!')
+    } catch (error) {
+      toast.error('Error updating profile!')
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   if (loading) {
     return <div>Loading...</div>
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">My Blogs</h1>
-        <Link
-          to="/write"
-          className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
-        >
-          Write New Blog
-        </Link>
-      </div>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-4xl font-black text-accent mb-8">PROFILE</h1>
+      <div className="brutal-card p-8">
+        <form onSubmit={updateProfile} className="space-y-6">
+          <div>
+            <label className="block text-accent font-bold mb-2">Name</label>
+            <input
+              type="text"
+              className="brutal-input w-full"
+              value={profile?.name || ''}
+              onChange={e => setProfile({ ...profile, name: e.target.value })}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-accent font-bold mb-2">Bio</label>
+            <textarea
+              className="brutal-input w-full h-32"
+              value={profile?.bio || ''}
+              onChange={e => setProfile({ ...profile, bio: e.target.value })}
+            />
+          </div>
 
-      <div className="space-y-6">
-        {blogs.map((blog) => (
-          <div
-            key={blog.id}
-            className="border border-gray-200 p-6 rounded-lg hover:border-black transition-colors"
+          <div>
+            <label className="block text-accent font-bold mb-2">Website</label>
+            <input
+              type="url"
+              className="brutal-input w-full"
+              value={profile?.website || ''}
+              onChange={e => setProfile({ ...profile, website: e.target.value })}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="brutal-btn w-full"
+            disabled={updating}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-xl font-semibold mb-2">{blog.title}</h2>
-                <p className="text-gray-600 mb-4">{blog.excerpt}</p>
-              </div>
-              <Link
-                to={`/edit/${blog.id}`}
-                className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Edit
-              </Link>
-            </div>
-            <div className="flex items-center text-sm text-gray-500">
-              <span>{new Date(blog.created_at).toLocaleDateString()}</span>
-              <span className="mx-2">•</span>
-              <span>{blog.published_at ? 'Published' : 'Draft'}</span>
-            </div>
-          </div>
-        ))}
-
-        {blogs.length === 0 && (
-          <div className="text-center text-gray-500">
-            You haven't written any blogs yet. Start writing!
-          </div>
-        )}
+            {updating ? 'Updating...' : 'Update Profile'}
+          </button>
+        </form>
       </div>
     </div>
   )
