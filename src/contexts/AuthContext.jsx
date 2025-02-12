@@ -1,9 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import toast from 'react-hot-toast'
 
 const AuthContext = createContext({})
-
-export const useAuth = () => useContext(AuthContext)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -19,23 +18,32 @@ export function AuthProvider({ children }) {
     // Listen for changes on auth state (sign in, sign out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
   const value = {
-    signUp: (data) => supabase.auth.signUp(data),
-    signIn: (data) => supabase.auth.signInWithPassword(data),
-    signOut: () => supabase.auth.signOut(),
-    signInWithGoogle: () => supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
-      }
-    }),
+    signUp: async (email, password) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+      if (error) throw error
+    },
+    signIn: async (email, password) => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
+    },
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    },
     user,
-    loading
   }
 
   return (
@@ -43,4 +51,8 @@ export function AuthProvider({ children }) {
       {!loading && children}
     </AuthContext.Provider>
   )
+}
+
+export const useAuth = () => {
+  return useContext(AuthContext)
 }
