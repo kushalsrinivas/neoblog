@@ -1,10 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import toast from 'react-hot-toast'
 
 const AuthContext = createContext({})
 
-export function AuthProvider({ children }) {
+export const useAuth = () => {
+  return useContext(AuthContext)
+}
+
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -25,24 +28,9 @@ export function AuthProvider({ children }) {
   }, [])
 
   const value = {
-    signUp: async (email, password) => {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-      if (error) throw error
-    },
-    signIn: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
-    },
-    signOut: async () => {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-    },
+    signUp: (data) => supabase.auth.signUp(data),
+    signIn: (data) => supabase.auth.signInWithPassword(data),
+    signOut: () => supabase.auth.signOut(),
     user,
   }
 
@@ -51,8 +39,4 @@ export function AuthProvider({ children }) {
       {!loading && children}
     </AuthContext.Provider>
   )
-}
-
-export const useAuth = () => {
-  return useContext(AuthContext)
 }

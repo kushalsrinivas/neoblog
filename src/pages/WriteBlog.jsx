@@ -1,42 +1,83 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
+import {
+  createPlugins,
+  Plate,
+  PlateContent,
+  createPlateUI,
+  getPluginType,
+  usePlateEditorRef,
+} from '@udecode/plate-common'
+import {
+  createParagraphPlugin,
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate-paragraph'
+import { createHeadingPlugin } from '@udecode/plate-heading'
+import {
+  createBoldPlugin,
+  createItalicPlugin,
+  createUnderlinePlugin,
+  MARK_BOLD,
+  MARK_ITALIC,
+  MARK_UNDERLINE,
+} from '@udecode/plate-basic-marks'
+import { createBlockquotePlugin } from '@udecode/plate-block-quote'
+import { createListPlugin } from '@udecode/plate-list'
+import { ToolbarButton, HeadingToolbar } from '@udecode/plate-toolbar'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
-const MenuBar = ({ editor }) => {
-  if (!editor) return null
+// Define element types
+const HEADING_1 = 'h1'
+const HEADING_2 = 'h2'
+const HEADING_3 = 'h3'
+
+const plugins = createPlugins([
+  createParagraphPlugin(),
+  createHeadingPlugin(),
+  createBlockquotePlugin(),
+  createBoldPlugin(),
+  createItalicPlugin(),
+  createUnderlinePlugin(),
+  createListPlugin(),
+], {
+  components: createPlateUI(),
+})
+
+const CustomToolbarButton = ({ format, icon, ...props }) => {
+  const editor = usePlateEditorRef()
+
+  const isActive = () => {
+    const pluginType = getPluginType(editor, format)
+    return editor?.marks ? editor.marks[pluginType] === true : false
+  }
 
   return (
-    <div className="border-b border-gray-200 p-4 space-x-4">
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`px-2 py-1 rounded ${editor.isActive('bold') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        Bold
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`px-2 py-1 rounded ${editor.isActive('italic') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        Italic
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`px-2 py-1 rounded ${editor.isActive('heading') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        H2
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`px-2 py-1 rounded ${editor.isActive('bulletList') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        Bullet List
-      </button>
-    </div>
+    <ToolbarButton
+      active={isActive()}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        editor.toggleMark(format)
+      }}
+      {...props}
+    >
+      {icon}
+    </ToolbarButton>
+  )
+}
+
+const Toolbar = () => {
+  return (
+    <HeadingToolbar className="border-b border-gray-200 p-2 mb-4 flex gap-2">
+      <CustomToolbarButton format={MARK_BOLD} icon="B" />
+      <CustomToolbarButton format={MARK_ITALIC} icon="I" />
+      <CustomToolbarButton format={MARK_UNDERLINE} icon="U" />
+      <span className="border-l border-gray-200 mx-2" />
+      <CustomToolbarButton format={HEADING_1} icon="H1" />
+      <CustomToolbarButton format={HEADING_2} icon="H2" />
+      <CustomToolbarButton format={HEADING_3} icon="H3" />
+    </HeadingToolbar>
   )
 }
 
@@ -46,34 +87,29 @@ function WriteBlog() {
   const [title, setTitle] = useState('')
   const [saving, setSaving] = useState(false)
   const [blogId, setBlogId] = useState(null)
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-      }),
-    ],
-    content: '',
-  })
+  const [content, setContent] = useState([
+    {
+      type: ELEMENT_PARAGRAPH,
+      children: [{ text: '' }],
+    },
+  ])
 
   // Auto-save functionality
   useEffect(() => {
-    if (!editor || !title) return
+    if (!content || !title) return
 
     const saveTimeout = setTimeout(async () => {
       await saveDraft()
     }, 3000)
 
     return () => clearTimeout(saveTimeout)
-  }, [editor?.getHTML(), title])
+  }, [content, title])
 
   const saveDraft = async () => {
     try {
       setSaving(true)
-      const content = editor.getHTML()
       
-      if (!content.trim() || !title.trim()) return
+      if (!content || !title.trim()) return
 
       const slug = title.toLowerCase()
         .replace(/[^\w\s-]/g, '')
@@ -81,10 +117,10 @@ function WriteBlog() {
 
       const blogData = {
         title,
-        content,
+        content: JSON.stringify(content),
         author_id: user.id,
         slug,
-        excerpt: content.replace(/<[^>]*>/g, '').substring(0, 150) + '...',
+        excerpt: content[0]?.children?.[0]?.text?.substring(0, 150) + '...' || '',
       }
 
       if (blogId) {
@@ -113,7 +149,7 @@ function WriteBlog() {
 
   const publishBlog = async () => {
     try {
-      if (!title.trim() || !editor?.getHTML().trim()) {
+      if (!title.trim() || !content) {
         toast.error('Title and content are required')
         return
       }
@@ -162,11 +198,18 @@ function WriteBlog() {
       </div>
 
       <div className="prose prose-lg max-w-none">
-        <MenuBar editor={editor} />
-        <EditorContent editor={editor} className="min-h-[500px] border rounded p-4" />
+        <Plate
+          plugins={plugins}
+          initialValue={content}
+          onChange={setContent}
+        >
+          <Toolbar />
+          <PlateContent 
+            className="min-h-[500px] border rounded p-4 focus:outline-none"
+            placeholder="Start writing your blog..."
+          />
+        </Plate>
       </div>
     </div>
   )
 }
-
-export default WriteBlog

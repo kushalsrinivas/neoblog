@@ -5,17 +5,9 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {
-      fontFamily: {
-        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
-      },
-      colors: {
-        primary: 'var(--color-primary)',
-        secondary: 'var(--color-secondary)',
-        accent: 'var(--color-accent)',
-        text: 'var(--color-text)',
-      },
-    },
+    extend: {},
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

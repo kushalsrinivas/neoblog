@@ -2,28 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .brutal-card {
-    @apply bg-white p-6 border-2 border-accent shadow-brutal rounded-none transition-transform hover:-translate-y-1;
-  }
-  
-  .brutal-btn {
-    @apply px-4 py-2 border-2 border-accent bg-white shadow-brutal hover:-translate-y-0.5 transition-transform text-accent font-bold;
-  }
-  
-  .brutal-link {
-    @apply text-accent underline decoration-2 hover:text-accent/80;
-  }
-  
-  .brutal-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-}
-
-.shadow-brutal {
-  box-shadow: 4px 4px 0 0 theme('colors.accent');
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 body {
-  @apply bg-primary text-gray-900;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+  }
 }

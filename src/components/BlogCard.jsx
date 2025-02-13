@@ -31,3 +31,5 @@ function BlogCard({ post }) {
     </Link>
   )
 }
+
+export default BlogCard

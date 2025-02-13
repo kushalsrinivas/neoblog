@@ -1,41 +1,43 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
+import { createPlateUI, Plate, createPlugins, PlateContent, PlateFloatingToolbar } from '@udecode/plate-common'
+import { createParagraphPlugin } from '@udecode/plate-paragraph'
+import { createHeadingPlugin } from '@udecode/plate-heading'
+import { createBlockquotePlugin } from '@udecode/plate-block-quote'
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements'
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks'
+import { createLinkPlugin } from '@udecode/plate-link'
+import { createListPlugin } from '@udecode/plate-list'
+import { createAlignPlugin } from '@udecode/plate-alignment'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
-const MenuBar = ({ editor }) => {
-  if (!editor) return null
+const plugins = createPlugins([
+  createParagraphPlugin(),
+  createBlockquotePlugin(),
+  createHeadingPlugin(),
+  createBasicElementsPlugin(),
+  createBasicMarksPlugin(),
+  createLinkPlugin(),
+  createListPlugin(),
+  createAlignPlugin(),
+], {
+  components: createPlateUI(),
+})
 
+const Toolbar = () => {
   return (
     <div className="border-b border-gray-200 p-4 space-x-4">
       <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`px-2 py-1 rounded ${editor.isActive('bold') ? 'bg-black text-white' : 'bg-gray-100'}`}
+        onClick={() => {
+          // Add toolbar functionality
+        }}
+        className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
       >
         Bold
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`px-2 py-1 rounded ${editor.isActive('italic') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        Italic
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`px-2 py-1 rounded ${editor.isActive('heading') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        H2
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`px-2 py-1 rounded ${editor.isActive('bulletList') ? 'bg-black text-white' : 'bg-gray-100'}`}
-      >
-        Bullet List
-      </button>
+      {/* Add more toolbar buttons */}
     </div>
   )
 }
@@ -47,15 +49,12 @@ function EditBlog() {
   const [title, setTitle] = useState('')
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-      }),
-    ],
-  })
+  const [content, setContent] = useState([
+    {
+      type: 'p',
+      children: [{ text: '' }],
+    },
+  ])
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -75,7 +74,7 @@ function EditBlog() {
         }
 
         setTitle(data.title)
-        editor?.commands.setContent(data.content)
+        setContent(JSON.parse(data.content))
       } catch (error) {
         console.error('Error fetching blog:', error)
         toast.error('Failed to load blog')
@@ -85,16 +84,14 @@ function EditBlog() {
       }
     }
 
-    if (editor) {
-      fetchBlog()
-    }
-  }, [id, editor, user.id, navigate])
+    fetchBlog()
+  }, [id, user.id, navigate])
 
   const updateBlog = async () => {
     try {
       setSaving(true)
 
-      if (!title.trim() || !editor?.getHTML().trim()) {
+      if (!title.trim() || !content) {
         toast.error('Title and content are required')
         return
       }
@@ -103,8 +100,8 @@ function EditBlog() {
         .from('blogs')
         .update({
           title,
-          content: editor.getHTML(),
-          excerpt: editor.getHTML().replace(/<[^>]*>/g, '').substring(0, 150) + '...',
+          content: JSON.stringify(content),
+          excerpt: content[0]?.children?.[0]?.text?.substring(0, 150) + '...' || '',
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
@@ -177,8 +174,18 @@ function EditBlog() {
       </div>
 
       <div className="prose prose-lg max-w-none">
-        <MenuBar editor={editor} />
-        <EditorContent editor={editor} className="min-h-[500px] border rounded p-4" />
+        <Toolbar />
+        <Plate
+          plugins={plugins}
+          initialValue={content}
+          onChange={setContent}
+        >
+          <PlateFloatingToolbar />
+          <PlateContent 
+            className="min-h-[500px] border rounded p-4 focus:outline-none"
+            placeholder="Start writing your blog..."
+          />
+        </Plate>
       </div>
     </div>
   )
